@@ -102,11 +102,11 @@ GstDebugserverTcp * gst_debugserver_tcp_new (void)
 }
 
 gboolean
-gst_debugserver_tcp_start_server (GstDebugserverTcp * tcp, guint port)
+gst_debugserver_tcp_start_server (GstDebugserverTcp * tcp, guint port, gint max_connections)
 {
   GError *error = NULL;
 
-  tcp->service = g_threaded_socket_service_new (10); // TODO expose to config
+  tcp->service = g_threaded_socket_service_new (max_connections);
 
   g_socket_listener_add_inet_port ((GSocketListener *) tcp->service,
       port, NULL, &error);
@@ -157,20 +157,21 @@ gst_debugserver_tcp_run (GThreadedSocketService * service,
     gst_debugger__command__free_unpacked (command, NULL);
   }
 
-  g_mutex_lock (&self->clients_mutex);
-  self->clients = g_slist_remove (self->clients, client);
-  g_mutex_unlock (&self->clients_mutex);
-
   if (self->client_disconnected_handler)
     self->client_disconnected_handler (client, self->owner);
+
+  g_mutex_lock (&self->clients_mutex);
 
   g_mutex_clear (&client->mutex);
   g_object_unref (client->cancel);
   g_free (client);
+  self->clients = g_slist_remove (self->clients, client);
 
-  GST_LOG_OBJECT (self, "Client disconnected");
+  g_mutex_unlock (&self->clients_mutex);
 
   g_cond_signal (&self->client_removed_cond);
+
+  GST_LOG_OBJECT (self, "Client disconnected");
 
   return FALSE;
 }

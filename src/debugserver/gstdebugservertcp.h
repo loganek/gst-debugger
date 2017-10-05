@@ -76,7 +76,7 @@ struct _GstDebugserverTcpClass
 
 GstDebugserverTcp * gst_debugserver_tcp_new (void);
 
-gboolean gst_debugserver_tcp_start_server (GstDebugserverTcp * tcp, guint port);
+gboolean gst_debugserver_tcp_start_server (GstDebugserverTcp * tcp, guint port, gint max_connections);
 
 gboolean gst_debugserver_tcp_send_packet (GstDebugserverTcp * tcp, TcpClient * client,
   GstDebugger__GStreamerData * gst_data);

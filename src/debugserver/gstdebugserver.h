@@ -62,6 +62,7 @@ struct _GstDebugserverTracer {
   /*< private >*/
   GstPipeline *pipeline;
   gint port;
+  gint max_connections;
   GstDebugserverTcp *tcp_server;
   GstDebugserverLog *log;
   GstDebugserverMessage *message;

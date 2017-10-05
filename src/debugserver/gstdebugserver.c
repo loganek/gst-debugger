@@ -28,10 +28,6 @@
 
 #define GST_USE_UNSTABLE_API
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#endif
-
 #include "gstdebugserver.h"
 
 #include "gstdebugservertopology.h"
@@ -53,6 +49,7 @@ G_DEFINE_TYPE_WITH_CODE (GstDebugserverTracer, gst_debugserver_tracer,
     GST_TYPE_TRACER, _do_init)
 
 #define DEFAULT_PORT 8080
+#define DEFAULT_MAX_CONNECTIONS 10
 
 static void gst_debugserver_command_handler (GstDebugger__Command * command,
     gpointer debugtracer, TcpClient * client);
@@ -78,36 +75,40 @@ gst_debugserver_log_handler (GstDebugCategory *category, GstDebugLevel level,
 static void
 set_params (GstDebugserverTracer *self)
 {
-    gchar *params = NULL, *tmp;
-    GstStructure *params_struct;
+  gchar *params = NULL, *tmp;
+  GstStructure *params_struct;
 
-    g_object_get (self, "params", &params, NULL);
+  g_object_get (self, "params", &params, NULL);
 
-    if (params == NULL) {
+  if (params == NULL) {
+    self->port = DEFAULT_PORT;
+    self->max_connections = DEFAULT_MAX_CONNECTIONS;
+  } else {
+    tmp = g_strdup_printf ("debugserver,%s", params);
+    params_struct = gst_structure_from_string (tmp, NULL);
+    g_free (tmp);
+
+    if (params_struct) {
+      if (!gst_structure_get_int (params_struct, "port", &self->port)) {
         self->port = DEFAULT_PORT;
-    } else {
-        tmp = g_strdup_printf ("debugserver,%s", params);
-        params_struct = gst_structure_from_string (tmp, NULL);
-        g_free (tmp);
-
-        if (params_struct) {
-            if (!gst_structure_get_int (params_struct, "port", &self->port)) {
-                self->port = DEFAULT_PORT;
-            }
-            gst_structure_free (params_struct);
-        }
+      }
+      if (!gst_structure_get_int (params_struct, "max_connections", &self->max_connections)) {
+        self->max_connections = DEFAULT_MAX_CONNECTIONS;
+      }
+      gst_structure_free (params_struct);
     }
-    g_free (params);
+  }
+  g_free (params);
 }
 
 static void
 gst_debugserver_tracer_constructed (GObject * object)
 {
-    GstDebugserverTracer *self = GST_DEBUGSERVER_TRACER (object);
+  GstDebugserverTracer *self = GST_DEBUGSERVER_TRACER (object);
 
-    set_params (self);
+  set_params (self);
 
-    gst_debugserver_tcp_start_server (self->tcp_server, self->port);
+  gst_debugserver_tcp_start_server (self->tcp_server, self->port, self->max_connections);
 }
 
 static void
@@ -273,6 +274,7 @@ gst_debugserver_tracer_init (GstDebugserverTracer * self)
   GstTracer *tracer = GST_TRACER (self);
 
   self->port = DEFAULT_PORT;
+  self->max_connections = DEFAULT_MAX_CONNECTIONS;
 
   self->log = gst_debugserver_log_new ();
   gst_debug_add_log_function (gst_debugserver_log_handler, self, NULL);
