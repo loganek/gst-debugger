@@ -41,6 +41,7 @@ G_BEGIN_DECLS
 typedef struct _TcpClient {
   GSocketConnection * connection;
   GMutex mutex;
+  GCancellable * cancel;
 } TcpClient;
 
 typedef void (*GstDebugserverTcpHandleCommandFunction)
@@ -61,8 +62,9 @@ struct _GstDebugserverTcp {
 
   /*< private >*/
   GSocketService * service;
-  guint port;
   GSList * clients;
+  GMutex clients_mutex;
+  GCond client_removed_cond;
 };
 
 struct _GstDebugserverTcpClass
@@ -75,8 +77,6 @@ struct _GstDebugserverTcpClass
 GstDebugserverTcp * gst_debugserver_tcp_new (void);
 
 gboolean gst_debugserver_tcp_start_server (GstDebugserverTcp * tcp, guint port);
-
-void gst_debugserver_tcp_stop_server (GstDebugserverTcp * tcp);
 
 gboolean gst_debugserver_tcp_send_packet (GstDebugserverTcp * tcp, TcpClient * client,
   GstDebugger__GStreamerData * gst_data);

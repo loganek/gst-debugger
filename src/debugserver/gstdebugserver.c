@@ -54,12 +54,6 @@ G_DEFINE_TYPE_WITH_CODE (GstDebugserverTracer, gst_debugserver_tracer,
 
 #define DEFAULT_PORT 8080
 
-enum
-{
-  PROP_0,
-  PROP_PORT
-};
-
 static void gst_debugserver_command_handler (GstDebugger__Command * command,
     gpointer debugtracer, TcpClient * client);
 
