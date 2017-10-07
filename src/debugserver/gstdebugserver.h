@@ -36,26 +36,13 @@
 
 G_BEGIN_DECLS
 
-#define GST_TYPE_DEBUGSERVER_TRACER \
-  (gst_debugserver_tracer_get_type())
-#define GST_DEBUGSERVER_TRACER(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_DEBUGSERVER_TRACER,GstDebugserverTracer))
-#define GST_DEBUGSERVER_TRACER_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST((klass),GST_TYPE_DEBUGSERVER_TRACER,GstDebugserverTracerClass))
-#define GST_IS_DEBUGSERVER_TRACER(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE((obj),GST_TYPE_DEBUGSERVER_TRACER))
-#define GST_IS_DEBUGSERVER_TRACER_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE((klass),GST_TYPE_DEBUGSERVER_TRACER))
-#define GST_DEBUGSERVER_TRACER_CAST(obj) ((GstDebugserverTracer *)(obj))
-
-typedef struct _GstDebugserverTracer GstDebugserverTracer;
-typedef struct _GstDebugserverTracerClass GstDebugserverTracerClass;
-
 /**
  * GstDebugserverTracer:
  *
  * Opaque #GstDebugserverTracer data structure
  */
+G_DECLARE_FINAL_TYPE(GstDebugserverTracer, gst_debugserver_tracer, GST, DEBUGSERVER_TRACER, GstTracer)
+
 struct _GstDebugserverTracer {
   GstTracer 	 parent;
 
@@ -71,13 +58,6 @@ struct _GstDebugserverTracer {
   GstDebugserverBuffer *buffer;
 };
 
-struct _GstDebugserverTracerClass {
-  GstTracerClass parent_class;
-
-  /* signals */
-};
-
-G_GNUC_INTERNAL GType gst_debugserver_tracer_get_type (void);
 
 G_END_DECLS
 
